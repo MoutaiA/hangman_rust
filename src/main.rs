@@ -6,7 +6,7 @@ const END_GAME: u8 = 0;
 const STOP_GAME: &str = "STOP";
 
 fn main() {
-	//TODO: API
+    //TODO: API
     let mystery_word = String::from("toto");
     let mut counter = mystery_word.len();
     let mut characters: HashSet<String> = HashSet::new();
@@ -89,15 +89,22 @@ fn get_user_input() -> String {
     let mut input = String::new();
 
     println!("{}", "Next character?".bold());
-	//TODO: handle none
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
             let trimmed_input = String::from(input.trim());
             if trimmed_input != STOP_GAME {
-                input = trimmed_input.chars().nth(0).unwrap().to_string();
+                if let Some(first_char) = trimmed_input.chars().next() {
+                    input = first_char.to_string();
+                } else {
+                    input = String::new();
+                    println!("Please, provide a character");
+                }
             }
         }
-        Err(error) => println!("{}", error),
+        Err(error) => {
+            println!("{}", error);
+            input = String::from("");
+        }
     }
 
     return input;
@@ -119,9 +126,8 @@ fn get_all_characters(characters: &HashSet<String>) -> Vec<String> {
     return arr;
 }
 
-//TODO:
 fn is_part(mystery_word: &str, user_input: &str) -> bool {
-    return true;
+    return mystery_word.contains(user_input);
 }
 
 fn is_response_mystery_word(mystery_word: &str, response: &str) -> bool {
