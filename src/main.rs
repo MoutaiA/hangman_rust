@@ -1,18 +1,30 @@
 use colored::*;
 use std::collections::HashSet;
 use std::io;
+use serde::{Deserialize, Serialize};
 
+const MAX_LIFE: i32 = 6;
 const END_GAME: u8 = 0;
 const STOP_GAME: &str = "STOP";
 
-fn main() {
-    //TODO: API
-    let mystery_word = String::from("toto");
-    let mut counter = mystery_word.len();
+/*
+                        |___
+   - Display the hangman|  O
+                        | /|\
+                        | / \
+                        |_____
+*/
+
+#[tokio::main]
+async fn main() {
+    display_welcome();
+    let choice = get_user_choice();
+
+    let mystery_word = get_word(choice).await;
+    let mut counter = MAX_LIFE;
     let mut characters: HashSet<String> = HashSet::new();
     let mut response = set_response(&mystery_word, &characters);
 
-    display_welcome();
     display_response(&response);
 
     while counter > END_GAME.into() {
@@ -65,6 +77,48 @@ fn display_welcome() {
         "Finally, only word between a to z, and on lowercase are allowed".bold()
     );
     println!();
+}
+
+fn get_user_choice() -> bool {
+    println!("Which kind of word do you want to play with, a real (easy) or a fake one (hard) ?");
+    loop {
+        let mut input = String::new();
+        println!("Enter 'y' for a easy or 'n' for hard: ");
+        io::stdin().read_line(&mut input).unwrap();
+        match input.trim().to_lowercase().as_str() {
+            "y" => return true,
+            "n" => return false,
+            _ => continue,
+        }
+    }
+}
+
+async fn get_word(choice: bool) -> String {
+    let word : String;
+
+    if choice {
+        let response = make_request("/word").await;
+        word = response.unwrap();
+    } else {
+		let response = make_request("/fake").await;
+        word = response.unwrap();
+    }
+
+    return word;
+}
+
+#[derive(Serialize, Deserialize)]
+struct ApiResponse {
+    word: String,
+}
+
+
+async fn make_request(path: &str) -> Result<String, reqwest::Error> {
+    let base_url = "http://127.0.0.1:5000";
+    let url = format!("{}{}", base_url, path);
+    let response = reqwest::get(url).await?.json::<ApiResponse>().await?;
+
+	return Ok(response.word);
 }
 
 fn display_response(response: &str) {
