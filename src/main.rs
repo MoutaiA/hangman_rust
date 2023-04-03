@@ -1,7 +1,7 @@
 use colored::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::io;
-use serde::{Deserialize, Serialize};
 
 const MAX_LIFE: i32 = 6;
 const END_GAME: u8 = 0;
@@ -25,7 +25,7 @@ async fn main() {
     let mut characters: HashSet<String> = HashSet::new();
     let mut response = set_response(&mystery_word, &characters);
 
-    display_response(&response);
+    display_response(&response, &counter);
 
     while counter > END_GAME.into() {
         let mut user_input: String = get_user_input();
@@ -51,7 +51,7 @@ async fn main() {
         } else {
             counter -= 1;
         }
-        display_response(&response);
+        display_response(&response, &counter);
     }
     println!("Bye!");
 }
@@ -94,13 +94,13 @@ fn get_user_choice() -> bool {
 }
 
 async fn get_word(choice: bool) -> String {
-    let word : String;
+    let word: String;
 
     if choice {
         let response = make_request("/word").await;
         word = response.unwrap();
     } else {
-		let response = make_request("/fake").await;
+        let response = make_request("/fake").await;
         word = response.unwrap();
     }
 
@@ -112,16 +112,81 @@ struct ApiResponse {
     word: String,
 }
 
-
 async fn make_request(path: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://127.0.0.1:5000";
     let url = format!("{}{}", base_url, path);
     let response = reqwest::get(url).await?.json::<ApiResponse>().await?;
 
-	return Ok(response.word);
+    return Ok(response.word);
 }
 
-fn display_response(response: &str) {
+fn display_response(response: &str, counter: &i32) {
+    match counter {
+        0 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|      /|\\");
+            println!("|      / \\");
+            println!("|       ");
+            println!("\n\n");
+        }
+        1 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|      /|\\");
+            println!("|      / ");
+            println!("|       ");
+            println!("\n\n");
+        }
+        2 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|      /|\\");
+            println!("|       ");
+            println!("|       ");
+            println!("\n\n");
+        }
+        3 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|      /|");
+            println!("|       ");
+            println!("|       ");
+            println!("\n\n");
+        }
+        4 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|       |");
+            println!("|       ");
+            println!("|       ");
+            println!("\n\n");
+        }
+        5 => {
+            println!("_________");
+            println!("|       |");
+            println!("|       0");
+            println!("|       ");
+            println!("|       ");
+            println!("|       ");
+            println!("\n\n");
+        }
+        _ => {
+            println!("_________");
+            println!("|       |");
+            println!("|       ");
+            println!("|       ");
+            println!("|       ");
+            println!("|       ");
+            println!("\n\n");
+        }
+    }
+
     println!("Your current response is: {}", response);
 }
 
